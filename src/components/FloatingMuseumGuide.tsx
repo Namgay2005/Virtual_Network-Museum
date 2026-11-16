@@ -8,6 +8,11 @@ interface ChatMessage {
   text: string;
 }
 
+interface ChatApiResponse {
+  error?: unknown;
+  reply?: unknown;
+}
+
 interface EduGuideProps {
   activeRoom: MuseumRoom;
   onSelectRoom: (room: MuseumRoom) => void;
@@ -338,7 +343,15 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/eduguide/chat', {
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, '') || '';
+      if (import.meta.env.PROD && !apiBaseUrl) {
+        throw new Error(
+          'EduGuide is not configured yet. Set the VITE_API_BASE_URL repository variable to the hosted backend URL.'
+        );
+      }
+
+      const response = await fetch(`${apiBaseUrl}/api/eduguide/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -348,22 +361,42 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'EduGuide could not respond right now.');
+      const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(
+          `EduGuide returned a non-JSON response (${response.status}). Check the backend URL and service status.`
+        );
       }
+
+      let data: ChatApiResponse;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('EduGuide returned an invalid response. Please try again.');
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === 'string'
+            ? data.error
+            : 'EduGuide could not respond right now.'
+        );
+      }
+      if (typeof data.reply !== 'string' || !data.reply.trim()) {
+        throw new Error('EduGuide returned an invalid response. Please try again.');
+      }
+      const reply = data.reply;
 
       setMessages((prev) => [
         ...prev,
         {
           id: `model-${Date.now()}`,
           role: 'model',
-          text: data.reply,
+          text: reply,
         },
       ]);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Unable to connect to EduGuide.';
+      const msg = err instanceof Error ? err.message : 'Unable to connect to EduGuide.';
       setErrorText(msg);
     } finally {
       setIsLoading(false);

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: virtual-network-museum-api-namgay2005
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://namgay2005.github.io,http://localhost:3000,http://127.0.0.1:3000
+      - key: GEMINI_API_KEY
+        sync: false

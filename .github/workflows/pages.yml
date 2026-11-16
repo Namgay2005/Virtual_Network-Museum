@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE_PATH: /Virtual_Network-Museum/
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
