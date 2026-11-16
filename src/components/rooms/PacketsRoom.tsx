@@ -3,6 +3,7 @@ import {
   Play,
   RotateCcw,
   X,
+  Download,
   Award,
   CheckCircle2,
   ExternalLink,
@@ -197,8 +198,6 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
   // Quick check
   const [quickCheckPick, setQuickCheckPick] = useState<number | null>(null);
 
-  // Teacher presentation modal
-  const [pptModalOpen, setPptModalOpen] = useState(false);
 
   // Student file upload (local prototype)
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -667,62 +666,34 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
             <span>Museum Exhibits</span>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+          <div className="grid grid-cols-1 gap-6 mt-5">
             {/* Left: Teacher Reference Presentation */}
-            <div className="bg-white rounded-2xl border border-[#e5e0d5] overflow-hidden shadow-2xs flex flex-col justify-between">
-              <div>
-                <div className="bg-[#1e4fd6] text-white px-6 py-4">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-blue-100">
-                    TEACHER REFERENCE
-                  </p>
-                  <h3 className="font-serif-title text-lg sm:text-xl font-bold mt-0.5">
-                    Packets — Teacher Presentation
-                  </h3>
-                </div>
-
-                <div
-                  onClick={() => setPptModalOpen(true)}
-                  className="bg-[#eae6dc] px-8 py-5 flex items-center justify-center cursor-pointer group"
-                >
-                  <div className="bg-white w-full aspect-16/10 rounded-lg shadow-xs border border-[#e5e0d5] p-4 flex flex-col items-center justify-center text-center group-hover:border-[#1e4fd6] transition-colors">
-                    <span className="text-4xl" aria-hidden="true">📊</span>
-                    <h4 className="font-serif-title text-sm sm:text-base font-bold text-[#152847] mt-3">
-                      Original PowerPoint
-                    </h4>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      19 slides · original sequence
-                    </p>
-                    <div className="text-[11px] font-semibold text-[#1e4fd6] mt-3">
-                      View inside the website →
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 space-y-4">
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    View and navigate the original 19-slide presentation here.
-                    Its slide order and animations are kept in the PowerPoint file.
-                  </p>
-
-                  <div className="rounded-xl border border-[#e5e0d5] bg-[#faf8f4] px-4 py-3">
-                    <div className="text-sm font-bold text-[#152847]">
-                      PACKETS PPT.pptx
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      Teacher-provided material
-                    </div>
-                  </div>
-                </div>
+            <div className="bg-white rounded-2xl border border-[#e5e0d5] overflow-hidden shadow-2xs">
+              <div className="bg-[#1e4fd6] text-white px-6 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-blue-100">
+                  TEACHER REFERENCE
+                </p>
+                <h3 className="font-serif-title text-lg sm:text-xl font-bold mt-0.5">
+                  Packets — Teacher Presentation
+                </h3>
               </div>
-
-              <div className="px-6 pb-6 flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setPptModalOpen(true)}
-                  className="bg-[#152847] hover:bg-[#1e3a66] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+              <div className="p-3 sm:p-5">
+                <iframe
+                  src={PACKETS_PRESENTATION_VIEWER_URL}
+                  title="Original Packets PowerPoint presentation"
+                  className="w-full h-[70vh] min-h-[480px] border border-slate-200 rounded-xl"
+                  allowFullScreen
+                />
+              </div>
+              <div className="px-5 pb-5 flex justify-end">
+                <a
+                  href={PACKETS_PRESENTATION_URL}
+                  download="PACKETS PPT.pptx"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#152847] hover:bg-[#1e3a66] text-white text-sm font-semibold px-4 py-2.5 transition-colors"
                 >
-                  View presentation
-                </button>
+                  <Download className="w-4 h-4" />
+                  Download PowerPoint
+                </a>
               </div>
             </div>
 
@@ -1018,44 +989,6 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
           </button>
         </nav>
       </div>
-
-      {/* Teacher Presentation Viewer Modal */}
-      {pptModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setPptModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-6xl w-full h-[90vh] overflow-hidden shadow-2xl border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-[#152847] text-white px-6 py-4 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-blue-300 font-semibold">
-                  PACKETS PPT.pptx · Teacher Reference
-                </p>
-                <h3 className="font-serif-title text-lg font-bold">
-                  Packets — Teacher Presentation
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPptModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-white/10 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <iframe
-              src={PACKETS_PRESENTATION_VIEWER_URL}
-              title="Original Packets PowerPoint presentation"
-              className="w-full h-[calc(90vh-76px)] border-0"
-              allowFullScreen
-            />
-          </div>
-        </div>
-      )}
 
       {/* Built-in Packets Quiz Modal */}
       {quizModalOpen && (
