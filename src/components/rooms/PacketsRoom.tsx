@@ -888,13 +888,6 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
                   referrerPolicy="no-referrer"
                   className="max-h-72 mx-auto rounded-xl border border-slate-200"
                 />
-                <button
-                  type="button"
-                  onClick={() => setEmbeddedMediaUrl(null)}
-                  className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
-                >
-                  Remove embedded media
-                </button>
               </div>
             )}
           </div>

@@ -94,40 +94,9 @@ interface SavedReflection {
   submittedAt: string;
 }
 
-const VIDEO_STORAGE_KEY = 'exit_gallery_summary_video_url';
+const SUMMARY_VIDEO_EMBED_URL =
+  'https://www.youtube.com/embed/RYqlVUEmFxQ?controls=1&rel=0&playsinline=1';
 const REFLECTIONS_STORAGE_KEY = 'exit_gallery_saved_reflections';
-
-function normalizeVideoEmbedUrl(raw: string): {
-  type: 'iframe' | 'video';
-  src: string;
-} {
-  const trimmed = raw.trim();
-  try {
-    const parsed = new URL(trimmed);
-    if (
-      parsed.hostname.includes('youtube.com') &&
-      parsed.searchParams.get('v')
-    ) {
-      const videoId = parsed.searchParams.get('v');
-      return {
-        type: 'iframe',
-        src: `https://www.youtube.com/embed/${videoId}`,
-      };
-    }
-    if (parsed.hostname === 'youtu.be' && parsed.pathname.length > 1) {
-      return {
-        type: 'iframe',
-        src: `https://www.youtube.com/embed/${parsed.pathname.slice(1)}`,
-      };
-    }
-    if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(parsed.pathname)) {
-      return { type: 'video', src: trimmed };
-    }
-  } catch {
-    // fallback below
-  }
-  return { type: 'iframe', src: trimmed };
-}
 
 export const ExitGalleryRoom: React.FC<ExitGalleryRoomProps> = ({
   onNavigateRoom,
@@ -136,16 +105,6 @@ export const ExitGalleryRoom: React.FC<ExitGalleryRoomProps> = ({
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>(
     {}
   );
-
-  // Video Theatre state
-  const [savedVideoUrl, setSavedVideoUrl] = useState<string>(() => {
-    try {
-      return localStorage.getItem(VIDEO_STORAGE_KEY) || '';
-    } catch {
-      return '';
-    }
-  });
-  const [videoInput, setVideoInput] = useState('');
 
   // Reflection Wall form state
   const [q1, setQ1] = useState('');
@@ -165,28 +124,6 @@ export const ExitGalleryRoom: React.FC<ExitGalleryRoomProps> = ({
 
   const toggleCard = (id: string) => {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleLoadVideo = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleaned = videoInput.trim();
-    if (!cleaned) return;
-    setSavedVideoUrl(cleaned);
-    try {
-      localStorage.setItem(VIDEO_STORAGE_KEY, cleaned);
-    } catch {
-      // ignore storage errors
-    }
-    setVideoInput('');
-  };
-
-  const handleClearVideo = () => {
-    setSavedVideoUrl('');
-    try {
-      localStorage.removeItem(VIDEO_STORAGE_KEY);
-    } catch {
-      // ignore storage errors
-    }
   };
 
   const handleSubmitReflection = (e: React.FormEvent) => {
@@ -234,10 +171,6 @@ export const ExitGalleryRoom: React.FC<ExitGalleryRoomProps> = ({
       // ignore storage errors
     }
   };
-
-  const normalizedVideo = savedVideoUrl
-    ? normalizeVideoEmbedUrl(savedVideoUrl)
-    : null;
 
   return (
     <div className="min-h-screen bg-[#faf8f4] pb-16">
@@ -407,66 +340,18 @@ export const ExitGalleryRoom: React.FC<ExitGalleryRoomProps> = ({
             Watch the summary video your team has created for the museum.
           </p>
 
-          <div className="mt-4 rounded-2xl border-2 border-dashed border-[#d6d0c4] bg-white overflow-hidden">
-            {!normalizedVideo ? (
-              <div className="py-16 px-4 text-center bg-[#faf8f4]">
-                <div className="text-4xl mb-3 leading-none" aria-hidden="true">
-                  🎬
-                </div>
-                <p className="text-xs sm:text-sm text-slate-500">
-                  Summary video will appear here once a link is saved
-                </p>
-              </div>
-            ) : (
-              <div className="p-4 space-y-3">
-                <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-950">
-                  {normalizedVideo.type === 'video' ? (
-                    <video
-                      src={normalizedVideo.src}
-                      controls
-                      className="w-full h-full"
-                    />
-                  ) : (
-                    <iframe
-                      src={normalizedVideo.src}
-                      title="Museum Team Summary Video"
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  )}
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleClearVideo}
-                    className="text-xs text-slate-500 hover:text-rose-600 underline cursor-pointer"
-                  >
-                    Remove saved video
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="mt-4 rounded-2xl border-2 border-dashed border-[#d6d0c4] bg-white overflow-hidden p-4">
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-950">
+              <iframe
+                src={SUMMARY_VIDEO_EMBED_URL}
+                title="Museum Team Summary Video"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
           </div>
-
-          <form
-            onSubmit={handleLoadVideo}
-            className="mt-3 flex flex-col sm:flex-row gap-2.5"
-          >
-            <input
-              type="url"
-              value={videoInput}
-              onChange={(e) => setVideoInput(e.target.value)}
-              placeholder="Paste YouTube embed URL here (e.g. https://www.youtube.com/embed/...)"
-              className="flex-1 bg-white border border-[#ded9ce] rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#b8295c]"
-            />
-            <button
-              type="submit"
-              className="font-semibold text-sm px-6 py-2.5 rounded-xl bg-[#b8295c] hover:bg-[#991f4b] text-white transition-colors cursor-pointer shrink-0"
-            >
-              Load Video
-            </button>
-          </form>
         </section>
 
         {/* 5. Reflection Wall */}
