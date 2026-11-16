@@ -2,10 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   Play,
   RotateCcw,
-  ChevronLeft,
-  ChevronRight,
   X,
-  Download,
   Award,
   CheckCircle2,
   ExternalLink,
@@ -131,62 +128,10 @@ const PACKET_PARTS: Record<
   },
 };
 
-const TEACHER_SLIDES = [
-  {
-    num: 1,
-    title: 'Chapter 5: Data Communication & Packets',
-    bullets: [
-      'Class IX — Digital Technology & Innovation (DTI)',
-      'How digital messages travel reliably across global networks',
-      'Core concepts: Packets, Headers, Routers, and Protocols',
-    ],
-  },
-  {
-    num: 2,
-    title: 'Why Not Send One Giant File at Once?',
-    bullets: [
-      'A single 1 GB file on one line would monopolize the cable for everyone else',
-      'If a single bit error occurred near the end, the entire 1 GB would have to be resent',
-      'Packet switching solves both fairness and reliability',
-    ],
-  },
-  {
-    num: 3,
-    title: 'What Is a Network Packet?',
-    bullets: [
-      'A small, fixed-limit unit of binary data (typically ~1,500 bytes max on Ethernet)',
-      'Created by breaking down emails, web pages, photos, or streaming video',
-      'Transmitted independently from sender to receiver',
-    ],
-  },
-  {
-    num: 4,
-    title: 'Inside a Packet: 3 Essential Sections',
-    bullets: [
-      '1. Header: Source IP, Destination IP, Packet Number, Protocol',
-      '2. Payload: The actual chunk of message or file content',
-      '3. Trailer: Error-detection checksum (CRC) and end marker',
-    ],
-  },
-  {
-    num: 5,
-    title: 'Role of Routers in Packet Switching',
-    bullets: [
-      'Routers act as smart traffic intersections on the internet',
-      'Each router inspects the Header Destination IP and picks the best next hop',
-      'If Link A is congested, the router automatically steers packets onto Link B',
-    ],
-  },
-  {
-    num: 6,
-    title: 'Out-of-Order Arrival & Reassembly',
-    bullets: [
-      'Because packets travel different paths, Packet #3 can arrive before Packet #2',
-      'TCP uses sequence numbers in the Header to reorder packets accurately',
-      'Missing or corrupted packets are automatically requested again',
-    ],
-  },
-];
+const PACKETS_PRESENTATION_URL =
+  'https://raw.githubusercontent.com/Namgay2005/Virtual_Network-Museum/main/public/assets/packets/packets-presentation.pptx';
+const PACKETS_PRESENTATION_VIEWER_URL =
+  `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(PACKETS_PRESENTATION_URL)}`;
 
 const QUICK_CHECK_OPTIONS = [
   { label: 'The Payload', isCorrect: false },
@@ -254,7 +199,6 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
 
   // Teacher presentation modal
   const [pptModalOpen, setPptModalOpen] = useState(false);
-  const [slideIdx, setSlideIdx] = useState(0);
 
   // Student file upload (local prototype)
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -296,25 +240,6 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
     }));
     setUploadedFiles((prev) => [...prev, ...additions]);
     e.target.value = '';
-  };
-
-  const handleDownloadStudyDeck = () => {
-    const content = TEACHER_SLIDES.map(
-      (s) =>
-        `Slide ${s.num}: ${s.title}\n${s.bullets.map((b) => `  - ${b}`).join('\n')}`
-    ).join('\n\n');
-    const blob = new Blob(
-      [`PACKETS — TEACHER PRESENTATION SUMMARY (19-Slide Study Reference)\n\n${content}`],
-      { type: 'text/plain;charset=utf-8' }
-    );
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'PACKETS_Teacher_Presentation_Notes.txt';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const handleSaveQuizLink = (e: React.FormEvent) => {
@@ -755,38 +680,28 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
                   </h3>
                 </div>
 
-                {/* Slide Stage Preview */}
                 <div
                   onClick={() => setPptModalOpen(true)}
                   className="bg-[#eae6dc] px-8 py-5 flex items-center justify-center cursor-pointer group"
                 >
-                  <div className="bg-white w-full aspect-16/10 rounded-lg shadow-xs border border-[#e5e0d5] p-4 flex flex-col justify-between group-hover:border-[#1e4fd6] transition-colors">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#1e4fd6]">
-                        Slide {TEACHER_SLIDES[0].num} · Teacher Deck
-                      </span>
-                      <h4 className="font-serif-title text-sm sm:text-base font-bold text-[#152847] mt-1">
-                        {TEACHER_SLIDES[0].title}
-                      </h4>
-                      <ul className="mt-2 space-y-1 text-[11px] text-slate-600 list-disc list-inside">
-                        {TEACHER_SLIDES[0].bullets.map((b) => (
-                          <li key={b} className="truncate">
-                            {b}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="text-[11px] font-semibold text-[#1e4fd6]">
-                      Click to browse slides →
+                  <div className="bg-white w-full aspect-16/10 rounded-lg shadow-xs border border-[#e5e0d5] p-4 flex flex-col items-center justify-center text-center group-hover:border-[#1e4fd6] transition-colors">
+                    <span className="text-4xl" aria-hidden="true">📊</span>
+                    <h4 className="font-serif-title text-sm sm:text-base font-bold text-[#152847] mt-3">
+                      Original PowerPoint
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      19 slides · original sequence
+                    </p>
+                    <div className="text-[11px] font-semibold text-[#1e4fd6] mt-3">
+                      View inside the website →
                     </div>
                   </div>
                 </div>
 
                 <div className="p-6 space-y-4">
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Use this 19-slide presentation to review packets, protocols,
-                    and network devices. The original PowerPoint opens in
-                    PowerPoint, Keynote, or Google Slides.
+                    View and navigate the original 19-slide presentation here.
+                    Its slide order and animations are kept in the PowerPoint file.
                   </p>
 
                   <div className="rounded-xl border border-[#e5e0d5] bg-[#faf8f4] px-4 py-3">
@@ -806,7 +721,7 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
                   onClick={() => setPptModalOpen(true)}
                   className="bg-[#152847] hover:bg-[#1e3a66] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
                 >
-                  Open or download file
+                  View presentation
                 </button>
               </div>
             </div>
@@ -1111,7 +1026,7 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
           onClick={() => setPptModalOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200"
+            className="bg-white rounded-2xl max-w-6xl w-full h-[90vh] overflow-hidden shadow-2xl border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-[#152847] text-white px-6 py-4 flex items-center justify-between">
@@ -1132,57 +1047,12 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
               </button>
             </div>
 
-            <div className="p-6 sm:p-8 bg-[#f8fafc]">
-              <div className="bg-white rounded-xl border border-slate-200 p-6 min-h-[220px] flex flex-col justify-between shadow-2xs">
-                <div>
-                  <span className="text-xs font-bold text-[#2563eb]">
-                    Slide {TEACHER_SLIDES[slideIdx].num} of {TEACHER_SLIDES.length} (Summary Preview)
-                  </span>
-                  <h4 className="font-serif-title text-xl font-bold text-[#142642] mt-2">
-                    {TEACHER_SLIDES[slideIdx].title}
-                  </h4>
-                  <ul className="mt-4 space-y-2 text-sm text-slate-700 list-disc list-inside">
-                    {TEACHER_SLIDES[slideIdx].bullets.map((b) => (
-                      <li key={b}>{b}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={slideIdx === 0}
-                    onClick={() => setSlideIdx((s) => Math.max(0, s - 1))}
-                    className="p-2 rounded-lg border border-slate-200 bg-white disabled:opacity-40 cursor-pointer"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={slideIdx === TEACHER_SLIDES.length - 1}
-                    onClick={() =>
-                      setSlideIdx((s) =>
-                        Math.min(TEACHER_SLIDES.length - 1, s + 1)
-                      )
-                    }
-                    className="p-2 rounded-lg border border-slate-200 bg-white disabled:opacity-40 cursor-pointer"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadStudyDeck}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#152847] hover:bg-[#1e3a66] text-white text-xs font-semibold cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Study Notes</span>
-                </button>
-              </div>
-            </div>
+            <iframe
+              src={PACKETS_PRESENTATION_VIEWER_URL}
+              title="Original Packets PowerPoint presentation"
+              className="w-full h-[calc(90vh-76px)] border-0"
+              allowFullScreen
+            />
           </div>
         </div>
       )}
