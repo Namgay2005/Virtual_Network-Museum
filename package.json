@@ -10,7 +10,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@google/genai": "^2.32.0",
     "@tailwindcss/vite": "^4.1.4",
     "@vitejs/plugin-react": "^4.4.1",
     "dotenv": "^16.5.0",

@@ -14,5 +14,5 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         value: https://namgay2005.github.io,http://localhost:3000,http://127.0.0.1:3000
-      - key: GEMINI_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false

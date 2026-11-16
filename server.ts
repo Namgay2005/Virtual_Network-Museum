@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,21 +16,52 @@ interface ChatHistoryItem {
   text: string;
 }
 
-function getGenAIClient(): GoogleGenAI {
-  const apiKey = process.env.GEMINI_API_KEY;
+function getOpenRouterApiKey(): string {
+  const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error(
-      'GEMINI_API_KEY is not configured. Please check the Settings > Secrets panel.'
-    );
+    throw new Error('OPENROUTER_API_KEY is not configured in the backend environment.');
   }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
+  return apiKey;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function getOpenRouterReply(payload: unknown): string | undefined {
+  const choices = asRecord(payload)?.choices;
+  if (!Array.isArray(choices)) return undefined;
+
+  const message = asRecord(asRecord(choices[0])?.message);
+  const content = message?.content;
+
+  if (typeof content === 'string') return content.trim() || undefined;
+  if (!Array.isArray(content)) return undefined;
+
+  const text = content
+    .map((part) => asRecord(part)?.text)
+    .filter((part): part is string => typeof part === 'string')
+    .join('')
+    .trim();
+
+  return text || undefined;
+}
+
+function getOpenRouterError(
+  payload: unknown,
+  status: number,
+  statusText: string
+): string {
+  const error = asRecord(payload)?.error;
+  const message =
+    typeof error === 'string'
+      ? error
+      : asRecord(error)?.message;
+  return `OpenRouter request failed (${status}): ${
+    typeof message === 'string' && message.trim() ? message : statusText
+  }`;
 }
 
 function enforceChatRateLimit(
@@ -132,7 +162,7 @@ async function startServer() {
         return;
       }
 
-      const ai = getGenAIClient();
+      const apiKey = getOpenRouterApiKey();
 
       const safeHistory = Array.isArray(history)
         ? history
@@ -145,8 +175,8 @@ async function startServer() {
                 item.text.trim().length > 0
             )
             .map((item) => ({
-              role: item.role,
-              parts: [{ text: item.text }],
+              role: item.role === 'model' ? 'assistant' : 'user',
+              content: item.text,
             }))
         : [];
 
@@ -161,28 +191,39 @@ The museum has four main exhibit rooms, the Museum Lobby ('lobby'), and Back to 
 The visitor is currently viewing room: "${currentRoom || 'lobby'}".
 Keep answers clear, encouraging, accurate for Class IX students, and concise (2 to 5 short sentences or clean bullet points). Use relatable analogies when helpful.`;
 
-      const contents = [
-        ...safeHistory,
+      const response = await fetch(
+        'https://openrouter.ai/api/v1/chat/completions',
         {
-          role: 'user',
-          parts: [{ text: message.trim() }],
-        },
-      ];
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents,
-        config: {
-          systemInstruction,
-          thinkingConfig: {
-            thinkingLevel: ThinkingLevel.LOW,
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://namgay2005.github.io/Virtual_Network-Museum/',
+            'X-OpenRouter-Title': 'Virtual Network Museum',
           },
+          body: JSON.stringify({
+            model: 'openrouter/free',
+            messages: [
+              { role: 'system', content: systemInstruction },
+              ...safeHistory,
+              { role: 'user', content: message.trim() },
+            ],
+            max_tokens: 400,
+          }),
         },
-      });
+      );
 
-      const replyText =
-        response.text ||
-        "I'm right here with you in the museum! Ask me anything about packets, cables, wireless signals, netiquette, or mobile networks.";
+      const payload: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          getOpenRouterError(payload, response.status, response.statusText)
+        );
+      }
+
+      const replyText = getOpenRouterReply(payload);
+      if (!replyText) {
+        throw new Error('OpenRouter returned an empty response.');
+      }
 
       res.json({ reply: replyText });
     } catch (err: unknown) {
