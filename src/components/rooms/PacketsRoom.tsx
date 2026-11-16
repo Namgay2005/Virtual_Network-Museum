@@ -190,6 +190,16 @@ const PACKETS_QUIZ = [
 
 const PACKETS_KAHOOT_KEY = 'packets_room_kahoot_url';
 
+const PACKETS_VIDEO_URL = 'https://www.youtube.com/watch?v=6KQJSp9Uc6s';
+
+function getYouTubeEmbedUrl(url: string | null): string | null {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+  return match ? `https://www.youtube.com/embed/${match[1]}?rel=0` : null;
+}
+
 export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [selectedPart, setSelectedPart] = useState<PacketPartKey>('header');
@@ -207,7 +217,8 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
 
   // Packet animation exhibit
   const [mediaUrlInput, setMediaUrlInput] = useState('');
-  const [embeddedMediaUrl, setEmbeddedMediaUrl] = useState<string | null>(null);
+  const [embeddedMediaUrl, setEmbeddedMediaUrl] =
+    useState<string | null>(PACKETS_VIDEO_URL);
   const [showBuiltInAnimation, setShowBuiltInAnimation] = useState(false);
   const [showEmbedForm, setShowEmbedForm] = useState(false);
 
@@ -786,7 +797,7 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
             <span>Packet Animation Exhibit</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            Embed an animated GIF or video showing packet transmission in action.
+            Watch a video showing how data packets travel across a network.
           </p>
 
           <div className="mt-4 rounded-2xl border-2 border-dashed border-[#d6d0c4] bg-[#faf8f4] p-8 sm:p-10 text-center">
@@ -814,6 +825,13 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
                     className="px-4 py-2 rounded-xl border border-[#ded9ce] bg-white hover:bg-[#f2eee4] text-[#152847] text-xs font-semibold transition-colors cursor-pointer"
                   >
                     Paste GIF / Video URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEmbeddedMediaUrl(PACKETS_VIDEO_URL)}
+                    className="px-4 py-2 rounded-xl border border-[#ded9ce] bg-white hover:bg-[#f2eee4] text-[#152847] text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    ▶ Show Packets Video
                   </button>
                 </div>
 
@@ -882,12 +900,25 @@ export const PacketsRoom: React.FC<PacketsRoomProps> = ({ onNavigateRoom }) => {
               </div>
             ) : (
               <div className="space-y-3">
-                <img
-                  src={embeddedMediaUrl || ''}
-                  alt="Embedded packet transmission animation"
-                  referrerPolicy="no-referrer"
-                  className="max-h-72 mx-auto rounded-xl border border-slate-200"
-                />
+                {getYouTubeEmbedUrl(embeddedMediaUrl) ? (
+                  <div className="max-w-3xl mx-auto aspect-video rounded-xl overflow-hidden border border-slate-200 bg-black">
+                    <iframe
+                      src={getYouTubeEmbedUrl(embeddedMediaUrl) || ''}
+                      title="How data packets travel across a network"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={embeddedMediaUrl || ''}
+                    alt="Embedded packet transmission animation"
+                    referrerPolicy="no-referrer"
+                    className="max-h-72 mx-auto rounded-xl border border-slate-200"
+                  />
+                )}
               </div>
             )}
           </div>
