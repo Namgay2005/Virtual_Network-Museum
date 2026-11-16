@@ -106,7 +106,7 @@ export const ExploreLobby: React.FC<ExploreLobbyProps> = ({
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-colors cursor-pointer"
             >
               <MessageSquare className="w-4 h-4" />
-              <span>Ask EduGuide AI</span>
+              <span>Ask EduGuide</span>
             </button>
           </div>
         </div>

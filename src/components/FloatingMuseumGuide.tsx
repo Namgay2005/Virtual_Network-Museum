@@ -312,7 +312,7 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
     {
       id: 'welcome-msg',
       role: 'model',
-      text: "Hi explorer! 👋 I'm EduGuide, your AI museum companion for Chapter 5: Computer Networks. Ask me anything about Packets, Transmission Media, Netiquette, or Mobile Communication!",
+      text: "Hi explorer! 👋 I'm EduGuide, your museum guide for Chapter 5: Computer Networks. I can help with Packets, Transmission Media, Netiquette, and Mobile Communication.",
     },
   ]);
   const [input, setInput] = useState('');
@@ -424,7 +424,7 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h3 className="font-serif-title font-bold text-sm text-white truncate">
-                    EduGuide AI Chatbot
+                    EduGuide Museum Guide
                   </h3>
                   <Sparkles className="w-3.5 h-3.5 text-[#f6c453] shrink-0" />
                 </div>
@@ -481,7 +481,7 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-white text-slate-500 border border-[#e5e0d5] rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-xs font-medium">
-                  EduGuide is thinking…
+                  EduGuide is finding an answer…
                 </div>
               </div>
             )}
@@ -537,8 +537,8 @@ export const FloatingMuseumGuide: React.FC<EduGuideProps> = ({
       <button
         type="button"
         onClick={() => setIsChatOpen((prev) => !prev)}
-        aria-label="Open EduGuide AI Chatbot"
-        title="Ask EduGuide AI Chatbot"
+        aria-label="Open EduGuide chat"
+        title="Ask EduGuide"
         className="relative w-14 h-14 rounded-full bg-[#152847] border-2 border-white shadow-xl hover:scale-105 transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e59b14] cursor-pointer flex items-center justify-center"
       >
         <div className="w-full h-full rounded-full overflow-hidden bg-[#dbeafe]">
